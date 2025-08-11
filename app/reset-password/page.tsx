@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress"
 import { getSupabaseClient } from "@/lib/supabase"
 import { TreePine, Lock, AlertCircle, Loader2, CheckCircle, Eye, EyeOff, Shield, Key, ArrowLeft } from "lucide-react"
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageContent() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -261,139 +261,136 @@ export default function ResetPasswordPage() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
+                    placeholder="Digite sua nova senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12"
                     required
-                    minLength={8}
+                    className="pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                
-                {password && (
-                  <div className="space-y-3">
-                    {/* Password Strength Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground">Força da senha:</span>
-                        <Badge variant="outline" className={`text-xs ${getStrengthTextColor()}`}>
-                          {strengthText}
-                        </Badge>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor()}`}
-                          style={{ width: `${(passwordStrength / 5) * 100}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    
-                    {/* Password Requirements */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className={`flex items-center gap-1 ${validationChecks.length ? 'text-green-600' : 'text-muted-foreground'}`}>
-                        <div className={`w-2 h-2 rounded-full ${validationChecks.length ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                        8+ caracteres
-                      </div>
-                      <div className={`flex items-center gap-1 ${validationChecks.uppercase ? 'text-green-600' : 'text-muted-foreground'}`}>
-                        <div className={`w-2 h-2 rounded-full ${validationChecks.uppercase ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                        Maiúscula
-                      </div>
-                      <div className={`flex items-center gap-1 ${validationChecks.lowercase ? 'text-green-600' : 'text-muted-foreground'}`}>
-                        <div className={`w-2 h-2 rounded-full ${validationChecks.lowercase ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                        Minúscula
-                      </div>
-                      <div className={`flex items-center gap-1 ${validationChecks.number ? 'text-green-600' : 'text-muted-foreground'}`}>
-                        <div className={`w-2 h-2 rounded-full ${validationChecks.number ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                        Número
-                      </div>
-                      <div className={`flex items-center gap-1 ${validationChecks.special ? 'text-green-600' : 'text-muted-foreground'} col-span-2`}>
-                        <div className={`w-2 h-2 rounded-full ${validationChecks.special ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                        Caractere especial (!@#$%^&*)
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirmar Nova Senha</Label>
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirmar Senha</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
+                    placeholder="Confirme sua nova senha"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12"
                     required
-                    minLength={8}
+                    className="pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="text-xs text-red-600 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    As senhas não coincidem
-                  </p>
-                )}
-                
-                {confirmPassword && password === confirmPassword && (
-                  <p className="text-xs text-green-600 flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3" />
-                    Senhas coincidem
-                  </p>
-                )}
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full h-12 font-medium" 
-                disabled={loading || passwordStrength < 3 || password !== confirmPassword}
-                size="lg"
-              >
+              {/* Password strength indicator */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm">Força da senha</Label>
+                  <span className={`text-xs font-medium ${getStrengthTextColor()}`}>{strengthText}</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div className={`h-full ${getStrengthColor()} transition-all duration-300`} style={{ width: `${(passwordStrength / 5) * 100}%` }}></div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-2">
+                  <div className={`flex items-center gap-2 ${validationChecks.length ? 'text-green-600' : ''}`}>
+                    <CheckCircle className="h-3 w-3" />
+                    Mínimo de 8 caracteres
+                  </div>
+                  <div className={`flex items-center gap-2 ${validationChecks.uppercase ? 'text-green-600' : ''}`}>
+                    <CheckCircle className="h-3 w-3" />
+                    Letra maiúscula (A-Z)
+                  </div>
+                  <div className={`flex items-center gap-2 ${validationChecks.lowercase ? 'text-green-600' : ''}`}>
+                    <CheckCircle className="h-3 w-3" />
+                    Letra minúscula (a-z)
+                  </div>
+                  <div className={`flex items-center gap-2 ${validationChecks.number ? 'text-green-600' : ''}`}>
+                    <CheckCircle className="h-3 w-3" />
+                    Número (0-9)
+                  </div>
+                  <div className={`flex items-center gap-2 ${validationChecks.special ? 'text-green-600' : ''}`}>
+                    <CheckCircle className="h-3 w-3" />
+                    Símbolo (!@#$%)
+                  </div>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Redefinindo...
                   </>
                 ) : (
-                  <>
-                    <Shield className="mr-2 h-4 w-4" />
-                    Redefinir Senha
-                  </>
+                  <>Redefinir Senha</>
                 )}
               </Button>
-              
-              <div className="pt-4 border-t border-border/30">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => router.push("/login")}
-                  className="w-full text-muted-foreground hover:text-foreground"
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Voltar para Login
-                </Button>
-              </div>
+
+              <Button variant="ghost" type="button" onClick={() => router.push("/login")} className="w-full flex items-center justify-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para o login
+              </Button>
             </form>
+
+            {/* Password requirements */}
+            <div className="text-xs text-muted-foreground space-y-2">
+              <p className="font-medium">Requisitos de segurança:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Mínimo de 8 caracteres</li>
+                <li>Pelo menos 1 letra maiúscula (A-Z) e 1 minúscula (a-z)</li>
+                <li>Pelo menos 1 número (0-9)</li>
+                <li>Pelo menos 1 símbolo (!@#$%)</li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Carregando redefinição de senha...
+            </CardTitle>
+            <CardDescription>Preparando o formulário de redefinição</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carregando
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <ResetPasswordPageContent />
+    </Suspense>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -63,7 +63,7 @@ interface SearchHistory {
   category: string
 }
 
-export default function BuscaPage() {
+function BuscaPageContent() {
   const { processes } = useProcesses()
   const { technicians } = useTechnicians()
   const searchParams = useSearchParams()
@@ -646,5 +646,33 @@ export default function BuscaPage() {
         </div>
       </div>
     </ProtectedRoute>
+  )
+}
+
+export default function BuscaPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-6">
+        <Card className="border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-primary" />
+              Carregando Busca Inteligente...
+            </CardTitle>
+            <CardDescription>
+              Preparando a experiência de busca avançada
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carregando
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <BuscaPageContent />
+    </Suspense>
   )
 }
